@@ -1,0 +1,32 @@
+# 交叉编译示例报错日志
+# 模拟 arm-buildroot-linux-gnueabihf-gcc 编译一个 LED 驱动项目时的典型错误
+
+# --- 语法错误 ---
+drivers/led_drv.c:42:5: error: expected ';' before '}' token
+drivers/led_drv.c:18:10: error: 'GPIO_PIN_4' undeclared (first use in this function)
+drivers/led_drv.c:25:1: error: implicit declaration of function 'gpio_set_value' [-Werror=implicit-function-declaration]
+
+# --- 头文件缺失 ---
+drivers/led_drv.c:3:22: fatal error: linux/gpio.h: No such file or directory
+include/led_common.h:5:10: fatal error: miscdevice.h: No such file or directory
+
+# --- 链接错误 ---
+drivers/led_drv.c:(.text+0x42): undefined reference to 'gpio_request'
+drivers/led_drv.c:(.text+0x78): undefined reference to 'gpio_direction_output'
+/opt/buildroot/output/host/arm-buildroot-linux-gnueabihf/sysroot/usr/lib/libpthread.so: undefined reference to '__libc_vfork'
+/usr/bin/ld: cannot find -lusb-1.0
+
+# --- 架构不匹配 ---
+/usr/bin/ld: skipping incompatible /usr/lib/libfoo.so when searching for -lfoo
+/usr/bin/ld: warning: libc.so, needed by libfoo.so, wrong architecture, ignoring
+
+# --- Make 构建错误 ---
+make[1]: *** [drivers/led_drv.o] Error 1
+make: *** [modules] Error 2
+
+# --- 工具链缺失 ---
+make: arm-buildroot-linux-gnueabihf-gcc: Command not found
+
+# --- 警告（非致命但还是收集） ---
+drivers/led_drv.c:55:3: warning: unused variable 'ret' [-Wunused-variable]
+drivers/led_drv.c:80:1: warning: no return statement in function returning non-void [-Wreturn-type]
