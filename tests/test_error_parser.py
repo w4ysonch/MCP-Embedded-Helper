@@ -48,6 +48,7 @@ def test_syntax_error_details():
     assert e["file"] == "drivers/led_drv.c"
     assert e["line"] == 42
     assert e["type"] == "syntax_error"
+    assert e["severity"] == "ERROR"
     assert "expected ';'" in e["message"]
 
 
@@ -87,6 +88,17 @@ def test_toolchain_missing():
 
     assert len(errors) == 1
     assert errors[0]["type"] == "toolchain_missing"
+    assert errors[0]["severity"] == "FATAL"
+
+
+def test_warning_severity():
+    parser = ErrorParser()
+    text = "led.c:55:3: warning: unused variable 'ret'"
+    errors = parser.parse(text)
+
+    assert len(errors) == 1
+    assert errors[0]["type"] == "warning"
+    assert errors[0]["severity"] == "WARNING"
 
 
 def test_summary():
@@ -101,10 +113,11 @@ def test_summary():
 
 def test_build_error_repr():
     error = BuildError("led.c", 42, "syntax_error", "missing ;",
-                       "led.c:42: error: missing ;")
+                       "led.c:42: error: missing ;", severity="ERROR")
     repr_str = repr(error)
     assert "led.c" in repr_str
     assert "42" in repr_str
+    assert "ERROR" in repr_str
     assert "syntax_error" in repr_str
 
 
@@ -118,6 +131,7 @@ if __name__ == "__main__":
         test_linker_error,
         test_arch_mismatch,
         test_toolchain_missing,
+        test_warning_severity,
         test_summary,
         test_build_error_repr,
     ]

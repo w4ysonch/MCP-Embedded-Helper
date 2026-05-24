@@ -7,28 +7,44 @@ class BuildError:
     """单条编译错误的提取结果"""
 
     def __init__(self, file: str, line: int, error_type: str,
-                 message: str, raw_line: str):
+                 message: str, raw_line: str, severity: str = "ERROR"):
         self.file = file
         self.line = line
         self.error_type = error_type
         self.message = message
         self.raw_line = raw_line
+        self.severity = severity
 
     def to_dict(self) -> dict:
         return {
             "file": self.file,
             "line": self.line,
             "type": self.error_type,
+            "severity": self.severity,
             "message": self.message,
             "raw": self.raw_line,
         }
 
     def __repr__(self):
-        return f"BuildError({self.file}:{self.line} [{self.error_type}])"
+        return f"BuildError({self.file}:{self.line} [{self.severity}] {self.error_type})"
 
 
 class ErrorParser:
     """按行匹配编译输出，识别错误类型并提取文件名、行号、消息"""
+
+    # 每种错误类型的严重程度
+    # FATAL  → 编译无法进行
+    # ERROR  → 编译失败，需修复
+    # WARNING → 可编译通过，但建议修复
+    _SEVERITY = {
+        "toolchain_missing": "FATAL",
+        "syntax_error": "ERROR",
+        "header_missing": "ERROR",
+        "linker_error": "ERROR",
+        "arch_mismatch": "ERROR",
+        "make_error": "ERROR",
+        "warning": "WARNING",
+    }
 
     # 每个 pattern 对应一种错误类型
     # 命名组: (?P<file>...) 文件名, (?P<line>...) 行号, (?P<msg>...) 消息
@@ -160,12 +176,14 @@ class ErrorParser:
                     continue
                 seen.add(dedup_key)
 
+                severity = self._SEVERITY.get(error_type, "ERROR")
                 error = BuildError(
                     file=file,
                     line=line_no,
                     error_type=error_type,
                     message=message.strip(),
                     raw_line=line,
+                    severity=severity,
                 )
                 errors.append(error)
                 break
