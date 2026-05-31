@@ -3,7 +3,7 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from core.error_parser import ErrorParser, BuildError
+from mcp_embedded_helper.core.error_parser import ErrorParser, BuildError
 
 
 def load_fixture(filename: str) -> str:

@@ -38,22 +38,21 @@ riscv64-linux-gnu- | mips-linux-gnu-
 
 ---
 
-## Quick Start
+## Install
 
-### 1. Clone
+```bash
+pip install mcp-embedded-helper
+```
+
+### From Source
 
 ```bash
 git clone git@github.com:w4ysonch/MCP-Embedded-Helper.git
 cd MCP-Embedded-Helper
+pip install -e .
 ```
 
-### 2. Install Dependencies
-
-```bash
-pip install mcp[cli]
-```
-
-### 3. Run Tests
+### Run Tests
 
 ```bash
 python tests/test_error_parser.py
@@ -62,7 +61,7 @@ python tests/test_context_gatherer.py
 python tests/test_build_runner.py
 ```
 
-### 4. Wire Up with Claude Code
+### Wire Up with Claude Code
 
 Add to `.claude/settings.json`:
 
@@ -70,27 +69,20 @@ Add to `.claude/settings.json`:
 {
   "mcpServers": {
     "embedded-helper": {
-      "command": "python",
-      "args": ["src/main.py"],
-      "cwd": "/path/to/MCP-Embedded-Helper"
+      "command": "mcp-embedded-helper",
+      "args": []
     }
   }
 }
 ```
 
-Restart Claude Code. The tools below will be available.
-
-### 5. Usage
-
-In the Claude Code dialog:
+Restart Claude Code. Then in the dialog:
 
 > "Use run_build_and_analyze to compile this project and analyze any errors"
 
 Or:
 
 > "Check my cross-compile environment"
-
-Claude will invoke your tools and return the analysis.
 
 ---
 
@@ -123,26 +115,18 @@ Claude will invoke your tools and return the analysis.
 
 ```
 MCP-Embedded-Helper/
-├── src/
-│   ├── main.py                # MCP Server entry point
-│   ├── tools/                 # MCP tool layer (LLM-callable interfaces)
-│   │   └── build_analyzer.py  #   Build analysis + env doctor tools
-│   ├── core/                  # Core logic (MCP-decoupled, testable)
-│   │   ├── error_parser.py    #   Build error parser (regex + structured)
+├── src/mcp_embedded_helper/
+│   ├── main.py                # MCP Server entry
+│   ├── tools/                 # MCP tool layer
+│   │   └── build_analyzer.py  #   Build analysis + env doctor
+│   ├── core/                  # Core logic
+│   │   ├── error_parser.py    #   Build error parser
 │   │   ├── context_gatherer.py #  Source context collector
 │   │   ├── build_runner.py    #   make build executor
-│   │   └── env_checker.py     #   Cross-compile environment doctor
-│   └── config/                # Configuration
-│       └── settings.py        #   Toolchain prefixes, env var names
-├── tests/
-│   ├── fixtures/              # Test fixtures
-│   │   ├── sample_arm_gcc_errors.txt
-│   │   └── sample_led_drv.c
-│   ├── test_error_parser.py   #   11 tests
-│   ├── test_env_checker.py    #   5 tests
-│   ├── test_context_gatherer.py # 8 tests
-│   └── test_build_runner.py   #   8 tests
-├── requirements.txt
+│   │   └── env_checker.py     #   Environment doctor
+│   └── config/settings.py     # Toolchain config
+├── tests/                      # 32 unit tests
+├── pyproject.toml              # Package config
 ├── README.md
 └── README_EN.md
 ```

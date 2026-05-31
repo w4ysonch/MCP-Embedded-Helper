@@ -5,7 +5,7 @@ import shutil
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from core.build_runner import BuildRunner, BuildResult
+from mcp_embedded_helper.core.build_runner import BuildRunner, BuildResult
 
 
 def test_build_result_fields():

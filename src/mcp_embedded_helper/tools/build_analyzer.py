@@ -1,9 +1,9 @@
 import os
 
-from core.error_parser import ErrorParser
-from core.env_checker import EnvChecker
-from core.context_gatherer import ContextGatherer
-from core.build_runner import BuildRunner
+from ..core.error_parser import ErrorParser
+from ..core.env_checker import EnvChecker
+from ..core.context_gatherer import ContextGatherer
+from ..core.build_runner import BuildRunner
 
 
 def register_tools(mcp):

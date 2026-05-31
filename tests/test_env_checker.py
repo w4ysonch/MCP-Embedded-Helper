@@ -3,7 +3,7 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from core.env_checker import EnvChecker, EnvCheckResult
+from mcp_embedded_helper.core.env_checker import EnvChecker, EnvCheckResult
 
 
 def test_check_result_fields():

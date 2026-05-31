@@ -3,7 +3,7 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from core.context_gatherer import ContextGatherer
+from mcp_embedded_helper.core.context_gatherer import ContextGatherer
 
 
 FIXTURES = os.path.join(os.path.dirname(__file__), "fixtures")

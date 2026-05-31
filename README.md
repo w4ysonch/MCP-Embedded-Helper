@@ -38,22 +38,21 @@ riscv64-linux-gnu- | mips-linux-gnu-
 
 ---
 
-## 快速开始
+## 安装
 
-### 1. 克隆仓库
+```bash
+pip install mcp-embedded-helper
+```
+
+### 源码安装
 
 ```bash
 git clone git@github.com:w4ysonch/MCP-Embedded-Helper.git
 cd MCP-Embedded-Helper
+pip install -e .
 ```
 
-### 2. 安装依赖
-
-```bash
-pip install mcp[cli]
-```
-
-### 3. 运行测试
+### 运行测试
 
 ```bash
 python tests/test_error_parser.py
@@ -62,7 +61,7 @@ python tests/test_context_gatherer.py
 python tests/test_build_runner.py
 ```
 
-### 4. 接入 Claude Code
+### 接入 Claude Code
 
 在 `.claude/settings.json` 中添加：
 
@@ -70,27 +69,20 @@ python tests/test_build_runner.py
 {
   "mcpServers": {
     "embedded-helper": {
-      "command": "python",
-      "args": ["src/main.py"],
-      "cwd": "/你的项目路径/MCP-Embedded-Helper"
+      "command": "mcp-embedded-helper",
+      "args": []
     }
   }
 }
 ```
 
-重启 Claude Code 后即可使用以下工具。
+重启 Claude Code 后即可使用。在对话框中说：
 
-### 5. 使用示例
-
-在 Claude Code 对话框中说：
-
-> "用 run_build_and_analyze 帮我编译这个项目，有错误帮我分析"
+> "用 run_build_and_analyze 编译这个项目并分析报错"
 
 或者：
 
 > "检查一下我的交叉编译环境"
-
-Claude 会自动调用你的工具并返回分析结果。
 
 ---
 
@@ -123,26 +115,18 @@ Claude 会自动调用你的工具并返回分析结果。
 
 ```
 MCP-Embedded-Helper/
-├── src/
-│   ├── main.py                # MCP Server 入口，注册所有工具
-│   ├── tools/                 # MCP 工具层（暴露给大模型的接口）
-│   │   └── build_analyzer.py  #   编译分析 + 环境诊断工具注册
-│   ├── core/                  # 核心逻辑层（与 MCP 解耦，可独立测试）
-│   │   ├── error_parser.py    #   编译报错结构化解析
-│   │   ├── context_gatherer.py #   源文件上下文收集
-│   │   ├── build_runner.py    #   make 构建执行器
-│   │   └── env_checker.py     #   交叉编译环境诊断
-│   └── config/                # 配置
-│       └── settings.py        #   工具链前缀、环境变量常量
-├── tests/
-│   ├── fixtures/              # 测试固件
-│   │   ├── sample_arm_gcc_errors.txt
-│   │   └── sample_led_drv.c
-│   ├── test_error_parser.py   #   11 个测试
-│   ├── test_env_checker.py    #   5 个测试
-│   ├── test_context_gatherer.py # 8 个测试
-│   └── test_build_runner.py   #   8 个测试
-├── requirements.txt
+├── src/mcp_embedded_helper/
+│   ├── main.py                # MCP Server 入口
+│   ├── tools/                 # MCP 工具层
+│   │   └── build_analyzer.py  #   编译分析 + 环境诊断
+│   ├── core/                  # 核心逻辑层
+│   │   ├── error_parser.py    #   编译报错解析
+│   │   ├── context_gatherer.py #  源文件上下文
+│   │   ├── build_runner.py    #   make 构建执行
+│   │   └── env_checker.py     #   环境诊断
+│   └── config/settings.py     # 工具链配置
+├── tests/                      # 32 个单元测试
+├── pyproject.toml              # pip 包配置
 ├── README.md
 └── README_EN.md
 ```

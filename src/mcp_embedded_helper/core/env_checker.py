@@ -3,7 +3,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from config.settings import COMMON_TOOLCHAIN_PREFIXES, ENV_CROSS_COMPILE, ENV_ARCH, ENV_CC
+from ..config.settings import COMMON_TOOLCHAIN_PREFIXES, ENV_CROSS_COMPILE, ENV_ARCH, ENV_CC
 
 
 class EnvCheckResult:

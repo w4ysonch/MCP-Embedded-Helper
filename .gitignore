@@ -3,3 +3,6 @@ __pycache__/
 .venv/
 .DS_Store
 memory/
+*.egg-info/
+dist/
+.python-version
