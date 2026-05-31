@@ -13,15 +13,13 @@
 
 这个项目为 AI 提供嵌入式开发专用的"眼和手"：
 - **眼** — 读取你的编译日志、源码文件、环境配置
-- **手** — 自动解析错误、诊断环境、收集上下文
-
-让大模型从"泛泛而谈"变成精准的根因分析和修复建议。
+- **手** — 自动执行 make、解析错误、诊断环境、收集源码上下文
 
 ---
 
 ## 功能
 
-- **交叉编译分析器** — 解析 `arm-linux-gcc` 编译报错，识别 7 种错误类型，标记 FATAL / ERROR / WARNING 三个严重级别
+- **交叉编译分析器** — 自动执行 `make` 编译，解析 `arm-linux-gcc` 报错，识别 7 种错误类型，标记 FATAL / ERROR / WARNING 三个严重级别，并自动收集报错位置的源文件上下文
 - **一键环境诊断** — 检查 `CROSS_COMPILE`、`ARCH`、`CC` 环境变量，自动扫描系统中的交叉编译器，检测 make 版本
 - **设备树生成**（开发中） — 根据芯片型号自动生成 `.dts` 节点代码
 - **内核 Oops 解码**（开发中） — 把十六进制调用栈翻译成 文件名 + 行号
@@ -60,6 +58,8 @@ pip install mcp[cli]
 ```bash
 python tests/test_error_parser.py
 python tests/test_env_checker.py
+python tests/test_context_gatherer.py
+python tests/test_build_runner.py
 ```
 
 ### 4. 接入 Claude Code
@@ -78,19 +78,30 @@ python tests/test_env_checker.py
 }
 ```
 
-重启 Claude Code 后即可使用 `analyze_build_error`、`check_cross_env`、`list_files` 三个工具。
+重启 Claude Code 后即可使用以下工具。
 
 ### 5. 使用示例
 
 在 Claude Code 对话框中说：
 
-> "帮我分析这段编译报错：drivers/led.c:42:5: error: expected ';' before '}' token"
+> "用 run_build_and_analyze 帮我编译这个项目，有错误帮我分析"
 
 或者：
 
 > "检查一下我的交叉编译环境"
 
 Claude 会自动调用你的工具并返回分析结果。
+
+---
+
+## MCP 工具列表
+
+| 工具名 | 功能 |
+|--------|------|
+| `run_build_and_analyze` | 执行 `make` 编译，自动捕获输出并分析错误，附带源码上下文 |
+| `analyze_build_error` | 分析已有的编译报错文本或日志文件 |
+| `check_cross_env` | 一键诊断交叉编译环境 |
+| `list_files` | 列出当前目录文件 |
 
 ---
 
@@ -115,17 +126,22 @@ MCP-Embedded-Helper/
 ├── src/
 │   ├── main.py                # MCP Server 入口，注册所有工具
 │   ├── tools/                 # MCP 工具层（暴露给大模型的接口）
-│   │   └── build_analyzer.py  #   交叉编译分析 + 环境诊断工具
+│   │   └── build_analyzer.py  #   编译分析 + 环境诊断工具注册
 │   ├── core/                  # 核心逻辑层（与 MCP 解耦，可独立测试）
-│   │   ├── error_parser.py    #   编译报错解析（正则 + 结构化输出）
-│   │   └── env_checker.py     #   环境诊断（工具链/变量/make 检测）
+│   │   ├── error_parser.py    #   编译报错结构化解析
+│   │   ├── context_gatherer.py #   源文件上下文收集
+│   │   ├── build_runner.py    #   make 构建执行器
+│   │   └── env_checker.py     #   交叉编译环境诊断
 │   └── config/                # 配置
 │       └── settings.py        #   工具链前缀、环境变量常量
 ├── tests/
-│   ├── fixtures/              # 测试用的示例报错日志
-│   │   └── sample_arm_gcc_errors.txt
-│   ├── test_error_parser.py   #   11 个单元测试
-│   └── test_env_checker.py    #   5 个单元测试
+│   ├── fixtures/              # 测试固件
+│   │   ├── sample_arm_gcc_errors.txt
+│   │   └── sample_led_drv.c
+│   ├── test_error_parser.py   #   11 个测试
+│   ├── test_env_checker.py    #   5 个测试
+│   ├── test_context_gatherer.py # 8 个测试
+│   └── test_build_runner.py   #   8 个测试
 ├── requirements.txt
 ├── README.md
 └── README_EN.md
@@ -139,16 +155,15 @@ MCP-Embedded-Helper/
 Claude Code 对话框
         │
         ▼
-   main.py  ←—— MCP 入口
+   main.py  ←—— MCP 入口（4 个工具）
         │
         ▼
-   tools/build_analyzer.py  ←—— MCP 工具层（AI 调用的接口）
+   tools/build_analyzer.py  ←—— MCP 工具层
         │
-        ▼
-   core/error_parser.py     ←—— 解析报错文本 → 结构化数据
-   core/env_checker.py      ←—— 检测系统环境 → 诊断报告
-        │
-   config/settings.py       ←—— 常量配置
+        ├── core/error_parser.py     ←—— 报错文本 → 结构化数据
+        ├── core/context_gatherer.py  ←—— 定位源文件 → 截取上下文
+        ├── core/build_runner.py     ←—— 执行 make → 捕获输出
+        └── core/env_checker.py      ←—— 检测环境 → 诊断报告
 ```
 
 ---
