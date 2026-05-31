@@ -2,19 +2,17 @@ import os
 
 from core.error_parser import ErrorParser
 from core.env_checker import EnvChecker
+from core.context_gatherer import ContextGatherer
 
 
 def register_tools(mcp):
 
     @mcp.tool()
-    def analyze_build_error(log_text: str) -> str:
-        """分析交叉编译报错日志。
+    def analyze_build_error(log_text: str, project_dir: str = ".") -> str:
+        """分析交叉编译报错日志，自动收集错误位置的源码上下文。
 
-        参数 log_text 可以是:
-        - 直接粘贴的编译报错文本
-        - 报错日志文件的路径（如 /home/user/build.log）
-
-        返回结构化的错误分析，包含每条错误的文件名、行号、类型和严重级别。
+        log_text: 编译报错文本 或 日志文件路径
+        project_dir: 项目根目录（用于定位源文件），默认当前目录
         """
         text = _resolve_input(log_text)
         parser = ErrorParser()
@@ -23,7 +21,13 @@ def register_tools(mcp):
         if not errors:
             return "未检测到编译错误或警告。"
 
+        gatherer = ContextGatherer(project_dir)
+        contexts = gatherer.gather(errors)
+
         lines = [parser.summary(errors), "", _format_errors(errors)]
+        if contexts:
+            lines.append("")
+            lines.append(_format_contexts(contexts))
         return "\n".join(lines)
 
     @mcp.tool()
@@ -48,10 +52,20 @@ def _resolve_input(log_text: str) -> str:
 def _format_errors(errors: list) -> str:
     lines = []
     for i, e in enumerate(errors, 1):
-        marker = {"FATAL": "🔴", "ERROR": "🟡", "WARNING": "⚪"}.get(
-            e.get("severity", "ERROR"), "  ")
+        marker = {"FATAL": "X", "ERROR": "E", "WARNING": "W"}.get(
+            e.get("severity", "ERROR"), " ")
         lines.append(
-            f"  [{i}] [{e['severity']:7s}] {marker} "
+            f"  [{i}] [{e['severity'][:1]}] {marker} "
             f"{e['file']}:{e['line']}  {e['message']}"
         )
+    return "\n".join(lines)
+
+
+def _format_contexts(contexts: dict) -> str:
+    lines = ["--- 源码上下文 ---"]
+    for file_path, info in contexts.items():
+        lines.append(f"\n  {file_path}:")
+        for snippet in info["snippets"]:
+            lines.append(snippet)
+            lines.append("")
     return "\n".join(lines)
