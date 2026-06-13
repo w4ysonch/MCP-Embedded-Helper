@@ -163,6 +163,38 @@ Claude Code
 
 ---
 
+---
+
+## Troubleshooting
+
+### Could not find a version that satisfies the requirement
+
+Python >= 3.9 is required. Check with `python3 --version`. Upgrade if needed:
+
+```bash
+# Ubuntu
+sudo apt update && sudo apt install python3.10 python3-pip
+
+# macOS
+brew install python@3.10
+```
+
+### pip: command not found
+
+```bash
+# Ubuntu
+sudo apt install python3-pip
+```
+
+### SSL certificate errors
+
+```bash
+sudo apt install ca-certificates libssl-dev
+python3 -c "import ssl; print(ssl.OPENSSL_VERSION)"
+```
+
+---
+
 ## License
 
 MIT License

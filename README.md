@@ -163,6 +163,41 @@ Claude Code 对话框
 
 ---
 
+---
+
+## 常见问题
+
+### pip install 报错: Could not find a version
+
+要求 Python >= 3.9。执行 `python3 --version` 确认版本。如果版本过低，升级 Python：
+
+```bash
+# Ubuntu
+sudo apt update && sudo apt install python3.10 python3-pip
+
+# macOS
+brew install python@3.10
+```
+
+### pip: command not found
+
+```bash
+# Ubuntu
+sudo apt install python3-pip
+
+# macOS (随 Homebrew Python 自动安装)
+```
+
+### SSL 连接报错
+
+确保系统开启了 SSL 支持：
+```bash
+sudo apt install ca-certificates libssl-dev
+python3 -c "import ssl; print(ssl.OPENSSL_VERSION)"  # 确认 SSL 可用
+```
+
+---
+
 ## 许可
 
 MIT License
